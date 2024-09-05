@@ -1,8 +1,8 @@
-the broken function is the detour being created in the h2m-mod.exe at 0x16054D520 (at least in my exe 9dcfda29748e29e806119cb17847bb3617c188b402ed743bd16e770401f9e127)
+the broken function is the detour being created in the h2m-mod.exe at 0x160067fcf (at least in my exe 9dcfda29748e29e806119cb17847bb3617c188b402ed743bd16e770401f9e127)
 
-you can clear it by calling h2m-mod's detour clear function at 0x16201cf218 with 0x16054D520 as the arg
+you can clear it by calling h2m-mod's detour clear function 0x1601cf218 with 0x16054D520 as the arg
 
-then detour the original function again
+then detour mwr's original function again with the fix
 
 utils::hook::detour sub_2D57E0_hook;
 void sub_2D57E0_stub(game::pmove_t* pm, __int64 a2, __int64 a3, __int64 a4, __int64 a5)
