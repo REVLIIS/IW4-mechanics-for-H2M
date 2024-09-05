@@ -1,4 +1,4 @@
-the broken function is the detour being created in the h2m-mod.exe at 0x16054D520 (at least in my exe)
+the broken function is the detour being created in the h2m-mod.exe at 0x16054D520 (at least in my exe 9dcfda29748e29e806119cb17847bb3617c188b402ed743bd16e770401f9e127)
 
 you can clear it by calling h2m-mod's detour clear function at 0x16201cf218 with 0x16054D520 as the arg
 
