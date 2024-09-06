@@ -5,13 +5,30 @@ namespace Plugin {
         if ((pm->oldcmd.buttons & game::BUTTON_USERELOAD) == 0 && ((pm->cmd.buttons & game::BUTTON_USERELOAD) != 0) ||
             ((pm->oldcmd.buttons & game::BUTTON_RELOAD) == 0 && ((pm->cmd.buttons & game::BUTTON_RELOAD) != 0)))
         {
-            if ((pm->ps->sprintState.lastSprintEnd - pm->ps->sprintState.lastSprintStart) < 50) //put to 50, increase to make righty tighties easier to trigger
+            if ((pm->ps->sprintState.lastSprintEnd - pm->ps->sprintState.lastSprintStart) < 50) //Increase to make righty tighty easier
             {
                 if (game::PM_Weapon_AllowReload(pm->ps, game::WEAPON_HAND_RIGHT) && !game::PM_Weapon_AllowReload(pm->ps, game::WEAPON_HAND_LEFT))
                 {
                     game::PM_SetReloadingState(pm->ps, game::WEAPON_HAND_RIGHT);
                     return true;
                 }
+            }
+        }
+
+        return false;
+    }
+
+    bool checkForWristTwist(game::pmove_t* pm, bool checkOnly = false)
+    {
+        if ((pm->cmd.buttons & game::BUTTON_USERELOAD) == 0 && ((pm->oldcmd.buttons & game::BUTTON_USERELOAD) != 0) ||
+            (pm->cmd.buttons & game::BUTTON_RELOAD) == 0 && ((pm->oldcmd.buttons & game::BUTTON_RELOAD) != 0))
+        {
+            //if we are allowed to reload our left gun, and NOT allowed to reload right gun, start wrist twist
+            if (game::PM_Weapon_AllowReload(pm->ps, game::WEAPON_HAND_LEFT) && !game::PM_Weapon_AllowReload(pm->ps, game::WEAPON_HAND_RIGHT))
+            {
+                game::PM_SetReloadingState(pm->ps, game::WEAPON_HAND_LEFT);
+                pm->ps->torsoAnim = 3181; //reload anim, overrides the reset in BG_ClearReloadAnim, makes it so the sprint anim is shown on 3rd person character 
+                return true;
             }
         }
 
@@ -26,12 +43,8 @@ namespace Plugin {
 
         for (int i = 0; i <= handIndex; i++)
         {
-            if (i == game::WEAPON_HAND_LEFT)
-            {
-                if (pm->ps->holdingAkimbos && checkForRightyTighty(pm)) //if we are doing a righty tighty, keep left gun in running state
-                {
-                    continue;
-                }
+            if (i == game::WEAPON_HAND_LEFT && checkForRightyTighty(pm)) {
+                continue;
             }
 
             ps->weapState[i].weaponState = game::WEAPON_SPRINT_DROP;
@@ -40,20 +53,7 @@ namespace Plugin {
 
             if ((BYTE)ps->pm_type < 7u)
             {
-                ps->weapState[i].weapAnim = (34 | (ps->weapState[i].weaponState) & 0x800); //set correct sprintout anim when going from sprint end into ads
-            }
-        }
-    }
-
-    void checkForWristTwist(game::pmove_t* pm)
-    {
-        if ((pm->cmd.buttons & game::BUTTON_USERELOAD) == 0 && ((pm->oldcmd.buttons & game::BUTTON_USERELOAD) != 0) ||
-            (pm->cmd.buttons & game::BUTTON_RELOAD) == 0 && ((pm->oldcmd.buttons & game::BUTTON_RELOAD) != 0))
-        {
-            //if we are allowed to reload our left gun, and NOT allowed to reload right gun, start wrist twist
-            if (game::PM_Weapon_AllowReload(pm->ps, game::WEAPON_HAND_LEFT) && !game::PM_Weapon_AllowReload(pm->ps, game::WEAPON_HAND_RIGHT))
-            {
-                game::PM_SetReloadingState(pm->ps, game::WEAPON_HAND_LEFT);
+                ps->weapState[i].weapAnim = (34 | (ps->weapState[i].weaponState) & 0x800);
             }
         }
     }
@@ -70,9 +70,7 @@ namespace Plugin {
             ps->weapState[i].weaponDelay = 0;
 
             if ((BYTE)ps->pm_flags < 7u)
-            {
                 ps->weapState[i].weapAnim = (ps->weapState[i].weaponState) & 0x800 | 0x1Fu;
-            }
 
             if (pm->ps->holdingAkimbos)
             {
@@ -88,7 +86,7 @@ namespace Plugin {
         }
     }
 
-    //Reversed from IW4
+    //reversed from iw4
     utils::hook::detour PM_Weapon_CheckForSprint_hook;
     void PM_Weapon_CheckForSprint_stub(game::pmove_t* pm)
     {
@@ -121,9 +119,44 @@ namespace Plugin {
         }
     }
 
+    /*
+        This detour fixes an issue when you're on servers and trying to wrist twist with +usereload
+        I added an additional check to see if you're pressing the usereload button when the sprint raise event is happening,
+        so if your connection isn't perfect you dont stop halfway trough a wrist twist
+        Not fully reversed yet, but wasn't needed for v1.0.0.
+    */
+    utils::hook::detour PM_SprintEndingButtons_hook;
+    bool PM_SprintEndingButtons_stub(game::playerState_s* ps, int8_t forwardMove, int cmdButtons)
+    {
+        if ((ps->pm_flags & 0x8018) != 0 || forwardMove <= 105) {
+            return true;
+        }
 
-    void start() 
+        int v5 = ps->unknown3 & 1;
+        int v6 = (53005 - (v5 != 0)) & 0xFFFFFDCF | 0x30;
+
+        if ((ps->unknown1 & 0x40000000) == 0)
+            v6 = (53005 - (v5 != 0)) | 0x30;
+
+        int weaponState = ps->weapState[0].weaponState;
+
+        if ((v6 & cmdButtons) != 0)
+        {
+            if (ps->holdingAkimbos && (cmdButtons & game::BUTTON_USERELOAD) == 0 && weaponState == game::WEAPON_SPRINT_RAISE) //+usereload high ping fix
+                return false;
+
+            return true;
+        }
+
+        bool weaponStateChecks = (unsigned int)(weaponState - 14) <= 10 || (unsigned int)(weaponState - 32) <= 1 || (unsigned int)(weaponState - 36) <= 3;
+
+        return weaponStateChecks;
+    }
+
+    void start()
     {
         PM_Weapon_CheckForSprint_hook.create(0x2d9a10_b, PM_Weapon_CheckForSprint_stub);
+        
+        PM_SprintEndingButtons_hook.create(0x2cee40_b, PM_SprintEndingButtons_stub);
     }
 }
