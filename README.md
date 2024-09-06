@@ -24,7 +24,7 @@ Similarly, if the server has plugins running that the client doesn't have runnin
 
 <sub>Before you start, I highly recommend using my [H2M Plugin loader](https://github.com/REVLIIS/H2M-Plugin-Loader), which will automatically load plugins when you start h2m.</sub>
 
-1. Go to the [Releases](https://github.com/REVLIIS/IW4-mechanics-for-H2M/releases) section in the sidebar and download the latest `.zip` file.
+1. Go to the [Releases](https://github.com/REVLIIS/IW4-mechanics-for-H2M/releases) section in the sidebar and download the latest `.zip` file. Or click [here](https://github.com/REVLIIS/IW4-mechanics-for-H2M/releases/download/v1.0.0/IW4.Mechanics.for.H2M.v1.0.0.zip) for a direct download.
 
 ### Using my H2M Plugin loader:
 2. Unzip the contents of the `.zip` in your plugins folder
