@@ -17,7 +17,8 @@ This plugin aims to bring MW2 (2009) gun glitches/mechanics to H2M
 
 ## ⚠️ Warning
 **To use this plugin on a server, both the SERVER and the CLIENT(s) must have the plugin running!**<br>
-If you have plugins running while the server doesn't, the mechanics will not work properly.
+If you have plugins running that the server isn't running, the mechanics will not work properly. 
+Similarly, if the server has plugins running that the client doesn't have running, the mechanics won't work properly for that client.
 
 ## 🚀 How to setup
 
