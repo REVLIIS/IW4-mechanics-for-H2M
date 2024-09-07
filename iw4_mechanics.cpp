@@ -18,7 +18,7 @@ namespace Plugin {
         return false;
     }
 
-    bool checkForWristTwist(game::pmove_t* pm, bool checkOnly = false)
+    bool checkForWristTwist(game::pmove_t* pm)
     {
         if ((pm->cmd.buttons & game::BUTTON_USERELOAD) == 0 && ((pm->oldcmd.buttons & game::BUTTON_USERELOAD) != 0) ||
             (pm->cmd.buttons & game::BUTTON_RELOAD) == 0 && ((pm->oldcmd.buttons & game::BUTTON_RELOAD) != 0))
