@@ -13,6 +13,7 @@ This plugin aims to bring MW2 (2009) gun glitches/mechanics to H2M
 ## 🛠️ Planned for the near future:
 * Infinite faydes
 * Jitters
+* Knife lunges
 * Tac flips and barrel rolls (probably can't be done with just code, will probably require custom anims)
 
 ## ⚠️ Warning
